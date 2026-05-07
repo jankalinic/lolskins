@@ -193,6 +193,7 @@ height: 100%;
 object-fit: cover;
 display: block;
 transition: transform 0.3s ease;
+opacity: 25%
 }
 
 .champ-card:hover img {
@@ -230,10 +231,9 @@ margin-top: 1px;
 position: absolute;
 top: 5px; right: 5px;
 background: rgba(255, 4, 0, 0.8);
-border: 1px solid var(--gold-dim);
 border-radius: 2px;
 padding: 1px 5px;
-font-size: 0.55rem;
+font-size: 0.7rem;
 letter-spacing: 0.15em;
 color: white;
 text-transform: uppercase;
@@ -430,13 +430,12 @@ transition: transform 0.3s ease;
 .loot-badge {
 position: absolute;
 top: 5px; left: 5px;
-background: rgba(10,40,70,0.85);
-border: 1px solid var(--blue-accent);
+background: rgba(133, 139, 255, 0.8);
 border-radius: 2px;
 padding: 1px 6px;
-font-size: 0.55rem;
+font-size: 0.7rem;
 letter-spacing: 0.15em;
-color: #7dc8f0;
+color: white;
 text-transform: uppercase;
 }
 

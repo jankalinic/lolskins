@@ -178,11 +178,11 @@ function renderGrid(query) {
     const totalExtra = ownedNonDefault.length + lootSkins.length;
 
     const ownedBadge = ownedNonDefault.length > 0
-      ? `<div class="owned-badge">${ownedNonDefault.length} skin${totalExtra !== 1 ? 's' : ''}</div>`
+      ? `<div class="owned-badge">${ownedNonDefault.length} owned</div>`
       : '';
 
     const lootBadge = lootSkins.length > 0
-      ? `<div class="loot-badge">${lootSkins.length} skin${totalExtra !== 1 ? 's' : ''}</div>`
+      ? `<div class="loot-badge">${lootSkins.length} loot</div>`
       : '';
 
     return `<div class="champ-card" style="animation-delay:${Math.min(i*0.02, 0.5)}s"
