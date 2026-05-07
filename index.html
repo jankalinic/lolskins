@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LoL Skin Vault</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Rajdhani:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="logo">Skin <span>Vault</span></div>
+  <div class="subtitle">League of Legends · Collection Browser</div>
+
+  <div class="search-wrap" id="searchWrap" style="display:none">
+    <div class="search-inner">
+      <span class="search-icon">⚔</span>
+      <input type="text" id="searchInput" placeholder="Search champion..." autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+</header>
+
+<!-- File load prompt -->
+<div id="filePrompt">
+  <div class="file-prompt-inner">
+    <h2>Load Your Collection</h2>
+    <p>
+      Run the Python script to generate <code>skins.json</code> and <code>skinsLoot.json</code>,
+      then load them below to browse your skin collection.
+    </p>
+    <div class="file-row">
+      <div class="file-btn-wrap">
+        <label>Owned Skins</label>
+        <button class="file-pick-btn" id="skinsBtn" onclick="document.getElementById('skinsFile').click()">📂 skins.json</button>
+        <input type="file" id="skinsFile" accept=".json">
+      </div>
+      <div class="file-btn-wrap">
+        <label>Loot Skins</label>
+        <button class="file-pick-btn" id="lootBtn" onclick="document.getElementById('lootFile').click()">📂 skinsLoot.json</button>
+        <input type="file" id="lootFile" accept=".json">
+      </div>
+    </div>
+    <button class="load-btn" id="loadBtn" disabled onclick="loadCollection()">⚡ Load Collection</button>
+    <p class="hint">Both files are required. They are read locally — nothing is uploaded.</p>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="stats-bar" id="statsBar" style="display:none">
+  <span><strong id="statChamps">0</strong> Champions</span>
+  <span><strong id="statOwned">0</strong> Owned Skins</span>
+  <span><strong id="statLoot">0</strong> In Loot</span>
+</div>
+
+<!-- Filter tabs -->
+<div class="filter-tabs" id="filterTabs" style="display:none">
+  <button class="tab-btn active" data-filter="all" onclick="setFilter('all')">All Champions</button>
+  <button class="tab-btn" data-filter="owned" onclick="setFilter('owned')">Has Owned Skins</button>
+  <button class="tab-btn" data-filter="loot" onclick="setFilter('loot')">Has Loot Skins</button>
+  <button class="tab-btn" data-filter="default" onclick="setFilter('default')">Default Only</button>
+</div>
+
+<main>
+  <div id="loadingState" style="display:none">
+    <div><div class="loader"></div></div>
+    Loading champion data...
+  </div>
+  <div id="champGrid"></div>
+</main>
+
+<!-- Modal -->
+<div id="modalOverlay" onclick="closeModal(event)">
+  <div id="modal">
+    <div class="modal-header">
+      <img class="modal-champ-thumb" id="modalThumb" src="" alt="">
+      <div>
+        <div class="modal-title" id="modalTitle"></div>
+        <div class="modal-meta" id="modalMeta"></div>
+      </div>
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script src="script.js">
+</script>
+</body>
+</html>
