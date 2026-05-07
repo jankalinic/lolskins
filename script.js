@@ -8,32 +8,15 @@ let ddVersion = '';
 // ── File loading ───────────────────────────────────────────────────────────────
 let skinsData = null, lootData = null;
 
-function readJSON(file) {
-  return new Promise((res, rej) => {
-    const r = new FileReader();
-    r.onload = e => { try { res(JSON.parse(e.target.result)); } catch(err) { rej(err); } };
-    r.onerror = rej;
-    r.readAsText(file);
-  });
+async function readJSON(path) {
+  const response = await fetch(path);
+
+  if (!response.ok) {
+    throw new Error(`Failed to load: ${path}`);
+  }
+
+  return await response.json();
 }
-
-document.getElementById('skinsFile').addEventListener('change', e => {
-  if (e.target.files[0]) {
-    skinsData = e.target.files[0];
-    document.getElementById('skinsBtn').textContent = '✓ skins.json';
-    document.getElementById('skinsBtn').classList.add('loaded');
-    checkFilesReady();
-  }
-});
-
-document.getElementById('lootFile').addEventListener('change', e => {
-  if (e.target.files[0]) {
-    lootData = e.target.files[0];
-    document.getElementById('lootBtn').textContent = '✓ skinsLoot.json';
-    document.getElementById('lootBtn').classList.add('loaded');
-    checkFilesReady();
-  }
-});
 
 function checkFilesReady() {
   document.getElementById('loadBtn').disabled = !(skinsData && lootData);
@@ -44,32 +27,41 @@ async function loadCollection() {
   document.getElementById('loadingState').style.display = 'block';
 
   try {
+    const skinsPath = document.getElementById('skinsPath').value.trim();
+    const lootPath = document.getElementById('lootPath').value.trim();
+
     const [skinsList, lootList] = await Promise.all([
-      readJSON(skinsData),
-      readJSON(lootData)
+      readJSON(skinsPath),
+      readJSON(lootPath)
     ]);
 
-    // Parse owned skins: only add entries where ownership.owned is true
+    // owned skins
     for (const entry of skinsList) {
       if (entry.ownership?.owned === true) {
         ownedSkinIds.add(Number(entry.id));
       }
     }
 
-    // Parse loot: filter entries that are skins (itemKey starts with CHAMPION_SKIN_)
+    // loot skins
     for (const entry of lootList) {
-      // loot entries have lootId like "CHAMPION_SKIN_123456"
       const lid = entry.lootId ?? entry.lootName ?? '';
-      if (lid.startsWith('CHAMPION_SKIN_')) {
-        const num = parseInt(lid.replace('CHAMPION_SKIN_', ''));
-        if (!isNaN(num)) lootSkinIds.add(num);
+
+      if (lid.startsWith('CHAMPION_SKIN_RENTAL_')) {
+        const num = parseInt(
+          lid.replace('CHAMPION_SKIN_RENTAL_', '')
+        );
+
+        if (!isNaN(num)) {
+          lootSkinIds.add(num);
+        }
       }
     }
 
     await fetchDDragon();
-  } catch(err) {
+
+  } catch (err) {
     document.getElementById('loadingState').innerHTML =
-      `<p style="color:#c85050">Error: ${err.message}</p>`;
+      `<p style="color:#c85050">${err.message}</p>`;
   }
 }
 
@@ -156,7 +148,10 @@ function champHasOwned(champ) {
   return champ.skins.some(s => s.num !== 0 && ownedSkinIds.has(parseInt(s.id)));
 }
 function champHasLoot(champ) {
-  return champ.skins.some(s => lootSkinIds.has(parseInt(s.id)));
+  const champskin = champ.skins.some(s => lootSkinIds.has(parseInt(s.id)))
+  console.log("skin" + champskin)
+
+  return champskin;
 }
 
 function renderGrid(query) {
@@ -182,14 +177,19 @@ function renderGrid(query) {
     const lootSkins = champ.skins.filter(s => lootSkinIds.has(parseInt(s.id)));
     const totalExtra = ownedNonDefault.length + lootSkins.length;
 
-    const badge = totalExtra > 0
-      ? `<div class="owned-badge">${totalExtra} skin${totalExtra !== 1 ? 's' : ''}</div>`
+    const ownedBadge = ownedNonDefault.length > 0
+      ? `<div class="owned-badge">${ownedNonDefault.length} skin${totalExtra !== 1 ? 's' : ''}</div>`
+      : '';
+
+    const lootBadge = lootSkins.length > 0
+      ? `<div class="loot-badge">${lootSkins.length} skin${totalExtra !== 1 ? 's' : ''}</div>`
       : '';
 
     return `<div class="champ-card" style="animation-delay:${Math.min(i*0.02, 0.5)}s"
                   onclick="openModal('${champ.id}')">
       <img src="${imgUrl}" alt="${champ.name}" loading="lazy">
-      ${badge}
+      ${ownedBadge}
+      ${lootBadge}
       <div class="champ-card-overlay">
         <div class="champ-name">${champ.name}</div>
         ${totalExtra > 0 ? `<div class="skin-count">${ownedNonDefault.length} owned · ${lootSkins.length} loot</div>` : '<div class="skin-count">Default only</div>'}
@@ -228,14 +228,15 @@ function openModal(champId) {
     html += `</div>`;
   }
 
-  // Default skin
-  const defaultSkin = champ.skins.find(s => s.num === 0);
-  if (defaultSkin) {
-    html += `<div class="section-label">Default</div>`;
-    html += `<div class="skins-grid">`;
-    html += renderSkinCard(champ, defaultSkin, false);
-    html += `</div>`;
-  }
+// Note: DO not display default skins
+//  // Default skin
+//  const defaultSkin = champ.skins.find(s => s.num === 0);
+//  if (defaultSkin) {
+//    html += `<div class="section-label">Default</div>`;
+//    html += `<div class="skins-grid">`;
+//    html += renderSkinCard(champ, defaultSkin, false);
+//    html += `</div>`;
+//  }
 
   if (!ownedNonDefault.length && !lootSkins.length) {
     html += `<p style="color:var(--text-dim);text-align:center;padding:2rem;font-size:0.9rem;letter-spacing:0.1em">No additional skins owned or in loot for this champion.</p>`;

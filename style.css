@@ -221,7 +221,6 @@ text-overflow: ellipsis;
 
 .skin-count {
 font-size: 0.6rem;
-color: var(--gold-dim);
 letter-spacing: 0.15em;
 margin-top: 1px;
 }
@@ -230,13 +229,13 @@ margin-top: 1px;
 .owned-badge {
 position: absolute;
 top: 5px; right: 5px;
-background: rgba(200,155,60,0.18);
+background: rgba(255, 4, 0, 0.8);
 border: 1px solid var(--gold-dim);
 border-radius: 2px;
 padding: 1px 5px;
 font-size: 0.55rem;
 letter-spacing: 0.15em;
-color: var(--gold);
+color: white;
 text-transform: uppercase;
 }
 
@@ -415,7 +414,6 @@ box-shadow: 0 6px 20px rgba(30,90,140,0.3);
 
 .skin-img-wrap {
 position: relative;
-aspect-ratio: 16/9;
 overflow: hidden;
 background: var(--bg-mid);
 }

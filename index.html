@@ -33,16 +33,14 @@
     <div class="file-row">
       <div class="file-btn-wrap">
         <label>Owned Skins</label>
-        <button class="file-pick-btn" id="skinsBtn" onclick="document.getElementById('skinsFile').click()">📂 skins.json</button>
-        <input type="file" id="skinsFile" accept=".json">
+        <input type="text" id="skinsPath" value="./skins.json">
       </div>
       <div class="file-btn-wrap">
         <label>Loot Skins</label>
-        <button class="file-pick-btn" id="lootBtn" onclick="document.getElementById('lootFile').click()">📂 skinsLoot.json</button>
-        <input type="file" id="lootFile" accept=".json">
+        <input type="text" id="lootPath" value="./skinsLoot.json" >
       </div>
     </div>
-    <button class="load-btn" id="loadBtn" disabled onclick="loadCollection()">⚡ Load Collection</button>
+    <button class="load-btn" id="loadBtn" onclick="loadCollection()">⚡ Load Collection</button>
     <p class="hint">Both files are required. They are read locally — nothing is uploaded.</p>
   </div>
 </div>
