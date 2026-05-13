@@ -164,7 +164,7 @@ main {
 
 #champGrid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+	grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
 	gap: 10px;
 }
 
@@ -249,7 +249,7 @@ main {
 	background: rgba(255, 4, 0, 0.8);
 	border-radius: 2px;
 	padding: 1px 5px;
-	font-size: 0.7rem;
+	font-size: 0.5rem;
 	letter-spacing: 0.15em;
 	color: white;
 	text-transform: uppercase;
@@ -496,7 +496,7 @@ main {
 	background: rgba(133, 139, 255, 0.8);
 	border-radius: 2px;
 	padding: 1px 6px;
-	font-size: 0.7rem;
+	font-size: 0.5rem;
 	letter-spacing: 0.15em;
 	color: white;
 	text-transform: uppercase;
@@ -681,4 +681,45 @@ input[type="file"] {
 	border-color: var(--gold);
 	color: var(--gold);
 	background: rgba(200, 155, 60, 0.06);
+}
+
+#positionTabs {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin: 12px 0;
+}
+
+.pos-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(200,170,100,0.15);
+  border-radius: 4px;
+  color: var(--text-dim, #888);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pos-btn svg {
+  width: 28px;
+  height: 28px;
+}
+
+.pos-btn:hover {
+  color: var(--gold, #c8aa64);
+  border-color: rgba(200,170,100,0.4);
+  background: rgba(200,170,100,0.08);
+}
+
+.pos-btn.active {
+  color: var(--gold, #c8aa64);
+  border-color: var(--gold, #c8aa64);
+  background: rgba(200,170,100,0.12);
 }

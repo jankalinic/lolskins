@@ -22,7 +22,7 @@
   </div>
 </header>
 
-<!-- File load prompt -->
+<!-- Loading screen (shown on startup) -->
 <div id="filePrompt">
   <div class="file-prompt-inner">
     <h2>Load Your Collection</h2>
@@ -54,12 +54,78 @@
 
 <!-- Filter tabs -->
 <div class="filter-tabs" id="filterTabs" style="display:none">
-  <button class="tab-btn active" data-filter="all" onclick="setFilter('all')">All Champions</button>
-  <button class="tab-btn" data-filter="owned" onclick="setFilter('owned')">Has Owned Skins</button>
-  <button class="tab-btn" data-filter="loot" onclick="setFilter('loot')">Has Loot Skins</button>
+  <button class="tab-btn" data-filter="all" onclick="setFilter('all')">All Champions</button>
+  <button class="tab-btn active" data-filter="owned" onclick="setFilter('owned')">With Skins</button>
+  <button class="tab-btn" data-filter="loot" onclick="setFilter('loot')">With Loot Skins</button>
   <button class="tab-btn" data-filter="default" onclick="setFilter('default')">Default Only</button>
 </div>
+<div id="positionTabs">
+  <button class="pos-btn" data-pos="TOP" onclick="setPosition('TOP')" title="Top">
+    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Shield/square icon for Top -->
+      <rect x="4" y="4" width="24" height="24" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
+      <rect x="9" y="9" width="14" height="14" rx="1" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    </svg>
+    <span>Top</span>
+  </button>
 
+  <button class="pos-btn" data-pos="JUNGLE" onclick="setPosition('JUNGLE')" title="Jungle">
+    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Plant/leaf icon for Jungle -->
+      <path d="M16 28 C16 28 6 22 6 13 C6 8 10 5 16 5 C22 5 26 8 26 13 C26 22 16 28 16 28Z"
+            stroke="currentColor" stroke-width="2" fill="none"/>
+      <path d="M16 28 L16 14" stroke="currentColor" stroke-width="1.5"/>
+      <path d="M16 18 C16 18 11 15 9 11" stroke="currentColor" stroke-width="1.5"/>
+      <path d="M16 21 C16 21 21 18 23 14" stroke="currentColor" stroke-width="1.5"/>
+    </svg>
+    <span>Jungle</span>
+  </button>
+
+  <button class="pos-btn" data-pos="MIDDLE" onclick="setPosition('MIDDLE')" title="Mid">
+    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Crossed square for Mid -->
+      <rect x="4" y="4" width="24" height="24" rx="1" stroke="currentColor" stroke-width="2" fill="none"/>
+      <line x1="4" y1="4" x2="28" y2="28" stroke="currentColor" stroke-width="1.5"/>
+      <line x1="28" y1="4" x2="4" y2="28" stroke="currentColor" stroke-width="1.5"/>
+    </svg>
+    <span>Mid</span>
+  </button>
+
+  <button class="pos-btn" data-pos="BOTTOM" onclick="setPosition('BOTTOM')" title="ADC">
+    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Crosshair/target for ADC -->
+      <rect x="4" y="4" width="24" height="24" rx="1" stroke="currentColor" stroke-width="2" fill="none"/>
+      <rect x="10" y="10" width="12" height="12" rx="1" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    </svg>
+    <span>ADC</span>
+  </button>
+
+  <button class="pos-btn" data-pos="SUPPORT" onclick="setPosition('SUPPORT')">
+    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Flower/support icon -->
+      <circle cx="16" cy="16" r="4" stroke="currentColor" stroke-width="2" fill="none"/>
+      <path d="M16 4 C14 4 12 6 12 9 C12 12 14 12 16 12 C18 12 20 12 20 9 C20 6 18 4 16 4Z"
+            stroke="currentColor" stroke-width="1.5" fill="none"/>
+      <path d="M16 20 C14 20 12 20 12 23 C12 26 14 28 16 28 C18 28 20 26 20 23 C20 20 18 20 16 20Z"
+            stroke="currentColor" stroke-width="1.5" fill="none"/>
+      <path d="M4 16 C4 14 6 12 9 12 C12 12 12 14 12 16 C12 18 12 20 9 20 C6 20 4 18 4 16Z"
+            stroke="currentColor" stroke-width="1.5" fill="none"/>
+      <path d="M20 16 C20 14 20 12 23 12 C26 12 28 14 28 16 C28 18 26 20 23 20 C20 20 20 18 20 16Z"
+            stroke="currentColor" stroke-width="1.5" fill="none"/>
+    </svg>
+    <span>Support</span>
+  </button>
+  <div id="sortBar">
+    <select id="sortBy" onchange="setSort(this.value)">
+      <option value="name">Sort by Name</option>
+      <option value="date">Sort by Date Acquired</option>
+    </select>
+    <select id="sortDir" onchange="setSortDir(this.value)">
+      <option value="asc">Ascending</option>
+      <option value="desc">Descending</option>
+    </select>
+  </div>
+</div>
 <main>
   <div id="loadingState" style="display:none">
     <div><div class="loader"></div></div>
@@ -77,13 +143,13 @@
         <div class="modal-title" id="modalTitle"></div>
         <div class="modal-meta" id="modalMeta"></div>
       </div>
-      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+      <button class="modal-close" onclick="closeModalDirect()">&#x2715;</button>
     </div>
     <div class="modal-body" id="modalBody"></div>
   </div>
 </div>
 
-<script src="script.js">
-</script>
+<!-- CHANGE THIS TO PRIVATE/PUBLIC API -->
+<script src="public.js"></script>
 </body>
 </html>
