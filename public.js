@@ -1,34 +1,37 @@
 // ── State ──────────────────────────────────────────────────────────────────────
-let allChampions     = {};
-let ownedSkinIds     = new Set();
-let lootSkinIds      = new Set();
-let champPositions   = {};
+let allChampions      = {};
+let ownedSkinIds      = new Set();
+let lootSkinIds       = new Set();
+let champPositions    = {};
 let skinPurchaseDates = {}; // skinId → timestamp ms
-let currentFilter    = 'owned';
-let currentPosition  = '';
-let currentSort      = 'name'; // 'name' | 'date'
-let currentSortDir   = 'asc';  // 'asc'  | 'desc'
-let ddVersion        = '';
+let currentFilter     = 'owned';
+let currentPosition   = '';
+let currentSort       = 'name'; // 'name' | 'date'
+let currentSortDir    = 'asc';  // 'asc'  | 'desc'
 
-// ── File loading ───────────────────────────────────────────────────────────────
-async function readJSON(path) {
-  const response = await fetch(path);
-  if (!response.ok) throw new Error(`Failed to load: ${path}`);
-  return response.json();
-}
-
+// ── Boot: load everything from data/ ──────────────────────────────────────────
 async function loadCollection() {
-  document.getElementById('filePrompt').style.display  = 'none';
+  document.getElementById('filePrompt').style.display   = 'none';
   document.getElementById('loadingState').style.display = 'block';
 
   try {
     const skinsPath = document.getElementById('skinsPath').value.trim();
     const lootPath  = document.getElementById('lootPath').value.trim();
 
-    const [skinsList, lootList] = await Promise.all([
-      readJSON(skinsPath),
-      readJSON(lootPath),
+    const [champions, positions, skinsList, lootList] = await Promise.all([
+      fetchJSON('data/champions.json'),
+      fetchJSON('data/champion_positions.json'),
+      fetchJSON(skinsPath),
+      fetchJSON(lootPath),
     ]);
+
+    // Champion data
+    allChampions = champions;
+
+    // Positions — keyed by champion id (e.g. "AurelionSol")
+    for (const id of Object.keys(allChampions)) {
+      champPositions[id] = positions[id] ?? [];
+    }
 
     // Owned skins + purchase dates
     for (const entry of skinsList) {
@@ -40,16 +43,20 @@ async function loadCollection() {
       }
     }
 
-    // Loot skins
+    // Loot skins — type SKIN_RENTAL, id is in storeItemId
     for (const entry of lootList) {
-      const lid = entry.lootId ?? entry.lootName ?? '';
-      if (lid.startsWith('CHAMPION_SKIN_RENTAL_')) {
-        const num = parseInt(lid.replace('CHAMPION_SKIN_RENTAL_', ''));
-        if (!isNaN(num)) lootSkinIds.add(num);
+      if (entry.type === 'SKIN_RENTAL' && entry.storeItemId != null) {
+        lootSkinIds.add(Number(entry.storeItemId));
+      }
+      // Also handle permanent skin shards: lootId "CHAMPION_SKIN_110004"
+      const lid = entry.lootId ?? '';
+      if (lid.startsWith('CHAMPION_SKIN_') && !lid.includes('RENTAL')) {
+        const id = parseInt(lid.replace('CHAMPION_SKIN_', ''));
+        if (!isNaN(id)) lootSkinIds.add(id);
       }
     }
 
-    await fetchDDragon();
+    buildUI();
 
   } catch (err) {
     document.getElementById('loadingState').innerHTML =
@@ -57,47 +64,10 @@ async function loadCollection() {
   }
 }
 
-// ── Data Dragon ────────────────────────────────────────────────────────────────
-async function fetchDDragon() {
-  const versions = await readJSON('https://ddragon.leagueoflegends.com/api/versions.json');
-  ddVersion = versions[0];
-
-  const champJson = await readJSON(
-    `https://ddragon.leagueoflegends.com/cdn/${ddVersion}/data/en_US/champion.json`
-  );
-  const champIds = Object.values(champJson.data).map(c => c.id);
-
-  const batchSize = 20;
-  for (let i = 0; i < champIds.length; i += batchSize) {
-    const batch = champIds.slice(i, i + batchSize);
-    await Promise.all(batch.map(async (champId) => {
-      try {
-        const d = await readJSON(
-          `https://ddragon.leagueoflegends.com/cdn/${ddVersion}/data/en_US/champion/${champId}.json`
-        );
-        const c = d.data[champId];
-        allChampions[champId] = {
-          id:    champId,
-          name:  c.name,
-          key:   c.key,
-          skins: c.skins,
-        };
-      } catch (e) { /* skip */ }
-    }));
-  }
-
-  // Load positions from local file (downloaded by Python script)
-  try {
-    const positionsData = await readJSON('data/champion_positions.json');
-    for (const [id, champ] of Object.entries(allChampions)) {
-      const entry = positionsData[champ.name];
-      champPositions[id] = entry?.positions ?? [];
-    }
-  } catch (e) {
-    console.warn('Could not load positions:', e);
-  }
-
-  buildUI();
+async function fetchJSON(path) {
+  const res = await fetch(path);
+  if (!res.ok) throw new Error(`Failed to load: ${path} (HTTP ${res.status})`);
+  return res.json();
 }
 
 // ── Build UI ──────────────────────────────────────────────────────────────────
@@ -171,20 +141,18 @@ function champLatestDate(champ) {
 function renderGrid(query) {
   currentSort    = document.getElementById('sortBy').value;
   currentSortDir = document.getElementById('sortDir').value;
-  console.log('sort:', currentSort, currentSortDir, 'filter:', currentFilter);
+
   const grid = document.getElementById('champGrid');
 
   const sorted = Object.values(allChampions).sort((a, b) => {
     if (currentSort === 'date') {
       const da = champLatestDate(a);
       const db = champLatestDate(b);
-      // Champions with no date always sink to the bottom
       if (da === 0 && db === 0) return a.name.localeCompare(b.name);
       if (da === 0) return 1;
       if (db === 0) return -1;
       return currentSortDir === 'asc' ? da - db : db - da;
     }
-    // Name sort
     return currentSortDir === 'asc'
       ? a.name.localeCompare(b.name)
       : b.name.localeCompare(a.name);
@@ -205,7 +173,7 @@ function renderGrid(query) {
   }
 
   grid.innerHTML = filtered.map((champ, i) => {
-    const imgUrl          = `https://ddragon.leagueoflegends.com/cdn/${ddVersion}/img/champion/${champ.id}.png`;
+    const imgUrl          = `data/img/champion/${champ.id}.png`;
     const ownedNonDefault = champ.skins.filter(s => s.num !== 0 && ownedSkinIds.has(parseInt(s.id)));
     const lootSkins       = champ.skins.filter(s => lootSkinIds.has(parseInt(s.id)));
     const totalExtra      = ownedNonDefault.length + lootSkins.length;
@@ -234,8 +202,7 @@ function openModal(champId) {
   const champ = allChampions[champId];
   if (!champ) return;
 
-  document.getElementById('modalThumb').src =
-    `https://ddragon.leagueoflegends.com/cdn/${ddVersion}/img/champion/${champ.id}.png`;
+  document.getElementById('modalThumb').src = `data/img/champion/${champ.id}.png`;
   document.getElementById('modalTitle').textContent = champ.name;
 
   const ownedNonDefault = champ.skins.filter(s => s.num !== 0 && ownedSkinIds.has(parseInt(s.id)));
@@ -262,7 +229,7 @@ function openModal(champId) {
 }
 
 function renderSkinCard(champ, skin, isLoot) {
-  const splashUrl   = `https://ddragon.leagueoflegends.com/cdn/img/champion/loading/${champ.id}_${skin.num}.jpg`;
+  const splashUrl   = `data/img/loading/${champ.id}_${skin.num}.jpg`;
   const displayName = skin.name === 'default' ? champ.name : skin.name;
   const lootBadge   = isLoot ? `<div class="loot-badge">LOOT</div>` : '';
 

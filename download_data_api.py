@@ -210,19 +210,18 @@ def download_missing_images(all_champions: dict, CDN: str):
     ]
     bulk_download_with_retry(portrait_tasks, workers=10)
 
-    print("\nDownloading skin loading screens...")
-    loading_tasks = []
-    for cid, champ in all_champions.items():
-        for skin in champ["skins"]:
-            fname = f"{cid}_{skin['num']}.jpg"
-            loading_tasks.append((
-                f"{BASE_DDR}/cdn/img/champion/loading/{fname}",
-                IMG_LOAD / fname,
-                fname
-            ))
-    print(f"  Total loading tasks queued: {len(loading_tasks)}")
-    bulk_download_with_retry(loading_tasks, workers=10)
+def fetch_positions():
+    print("\n── Champion Positions ────────────────────────────────────────")
+    url  = "https://cdn.merakianalytics.com/riot/lol/resources/latest/en-US/champions.json"
+    data = fetch_json(url)
 
+    positions = {}
+    for champ_name, champ_data in data.items():
+        positions[champ_name] = champ_data.get("positions", [])
+
+    out = OUT_DIR / "champion_positions.json"
+    out.write_text(json.dumps(positions, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"  -> Saved {len(positions)} champions to {out}")
 
 # ── Entry point ────────────────────────────────────────────────────────────────
 
@@ -231,6 +230,7 @@ def main():
         d.mkdir(parents=True, exist_ok=True)
 
     fetch_ddragon()
+    fetch_positions()
 
     print("\n All done!")
 
