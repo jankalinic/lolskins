@@ -238,9 +238,12 @@ function renderSkinCard(champ, skin, isLoot) {
     ? `<div class="skin-info-sub">Acquired ${new Date(pd).toLocaleDateString()}</div>`
     : '';
 
+  const splashRemote = `https://ddragon.leagueoflegends.com/cdn/img/champion/loading/${champ.id}_${skin.num}.jpg`;
+
   return `<div class="skin-card${isLoot ? ' is-loot' : ''}">
     <div class="skin-img-wrap">
-      <img src="${splashUrl}" alt="${displayName}" loading="lazy">
+      <img src="${splashUrl}" alt="${displayName}" loading="lazy"
+           onerror="this.onerror=null;this.src='${splashRemote}'">
       ${lootBadge}
     </div>
     <div class="skin-info">

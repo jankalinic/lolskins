@@ -230,7 +230,7 @@ def main():
         d.mkdir(parents=True, exist_ok=True)
 
     fetch_ddragon()
-    fetch_positions()
+    fetch_positions
 
     print("\n All done!")
 
